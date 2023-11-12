@@ -54,7 +54,7 @@ def delivery_status(err, msg):
     if err is not None:
         print('Message delivery failed:', err)
     else:
-        print('Message delivered to', msg.topic(), '[Partition: {}]'.format(msg.partition()))
+        print('Message delivered to', msg.topic(), f'[Partition: {msg.partition()}]')
 
 def initiate_stream():
     """Initiates the process to stream user data to Kafka."""

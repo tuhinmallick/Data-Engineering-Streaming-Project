@@ -82,10 +82,11 @@ def transform_streaming_data(df):
         StructField("email", StringType(), False)
     ])
 
-    transformed_df = df.selectExpr("CAST(value AS STRING)") \
-        .select(from_json(col("value"), schema).alias("data")) \
+    return (
+        df.selectExpr("CAST(value AS STRING)")
+        .select(from_json(col("value"), schema).alias("data"))
         .select("data.*")
-    return transformed_df
+    )
 
 
 def initiate_streaming_to_bucket(df, path, checkpoint_location):
@@ -111,16 +112,14 @@ def main():
     app_name = "SparkStructuredStreamingToS3"
     access_key = "ENTER_YOUR_ACCESS_KEY"
     secret_key = "ENTER_YOUR_SECRET_KEY"
-    brokers = "kafka_broker_1:19092,kafka_broker_2:19093,kafka_broker_3:19094"
-    topic = "names_topic"
-    path = "BUCKET_PATH"
-    checkpoint_location = "CHECKPOINT_LOCATION"
-
-    spark = initialize_spark_session(app_name, access_key, secret_key)
-    if spark:
-        df = get_streaming_dataframe(spark, brokers, topic)
-        if df:
+    if spark := initialize_spark_session(app_name, access_key, secret_key):
+        brokers = "kafka_broker_1:19092,kafka_broker_2:19093,kafka_broker_3:19094"
+        topic = "names_topic"
+        if df := get_streaming_dataframe(spark, brokers, topic):
             transformed_df = transform_streaming_data(df)
+            path = "BUCKET_PATH"
+            checkpoint_location = "CHECKPOINT_LOCATION"
+
             initiate_streaming_to_bucket(transformed_df, path, checkpoint_location)
 
 
